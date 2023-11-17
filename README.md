@@ -4,7 +4,7 @@ We have used [GNINA](https://github.com/gnina/gnina) to propose poses for protei
 
 We have a function that uses OpenMM to minimize a protein-ligand structure and return the minimized energy. We can also determine the Root-mean-squared-deviation (RMSD) between each docked pose and the known crystal pose. Low energy means the complex is more stable, and low RMSD means the complex is closer to the correct pose. Your task is to modify this code so that we can figure out:
 1. Which pose that GNINA gave is the "correct" one? (lowest RMSD)
-2. Is this pose also the pose with the lowest energy
+2. Is this pose also the pose with the lowest energy?
 3. What does the closest docked pose look like compared to the crystal pose? Install [PyMol](https://pymol.org/2/) and use it to visualize the complex.
 
 In order to get this code running, you'll need to create a new [conda](...) environment. Then you can install the required packages with:
