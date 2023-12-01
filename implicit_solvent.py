@@ -1,3 +1,4 @@
+import os
 import sys
 
 from tqdm import trange
@@ -15,20 +16,38 @@ from openff.units.openmm import to_openmm
 # pdbfixer data/5vsc_A_rec.pdb --output data/5vsc_A_rec_fixed.pdb --add-residues --add-atoms=all --keep-heterogens=none
 
 
-def get_minimized_energy(pdb, lig):
+def get_minimized_energy(pdb, lig, conf_id):
 
-    modeller = app.Modeller(pdb.topology, pdb.positions)
-    modeller.add(lig.to_topology().to_openmm(), to_openmm(lig.conformers[0]))
-    mergedTopology = modeller.topology
-    mergedPositions = modeller.positions
+    out_file = f"data/minimized_{conf_id}.pdb"
 
     # load the AMBER force field with implicit solvent
     forcefield_kwargs = {
         "nonbondedCutoff": 2*unit.nanometer,
         "constraints": "HBonds"
     }
+    # the use of 'implicit/gbn2.xml' makes it use implicit
+    # Generalized Born solvent
     ffs = ['amber/ff14SB.xml', 'implicit/gbn2.xml']
     system_generator = SystemGenerator(forcefields=ffs, small_molecule_forcefield='gaff-2.11', molecules=[lig], forcefield_kwargs=forcefield_kwargs, cache='data/db.json')
+    
+
+    if os.path.exists(out_file):
+        # get the energy of the minimized pdb file
+        pdb = app.PDBFile(out_file)
+        pdb_topology = pdb.getTopology()
+        pdb_positions = pdb.getPositions()
+        pdb_system = system_generator.create_system(pdb_topology)
+        pdb_context = mm.Context(pdb_system, integrator)
+        pdb_context.setPositions(pdb_positions)
+        state = pdb_context.getState(getEnergy=True)
+        energy = state.getPotentialEnergy()
+        return energy
+
+    modeller = app.Modeller(pdb.topology, pdb.positions)
+    modeller.add(lig.to_topology().to_openmm(), to_openmm(lig.conformers[0]))
+    mergedTopology = modeller.topology
+    mergedPositions = modeller.positions
+
     system = system_generator.create_system(mergedTopology)
 
     residues = list(modeller.topology.residues())
@@ -55,6 +74,10 @@ def get_minimized_energy(pdb, lig):
     print(f'Minimizing energy...')
     mm.LocalEnergyMinimizer.minimize(context)
 
+    # save the minimized structure to a PDB file
+    positions = context.getState(getPositions=True).getPositions()
+    app.PDBFile.writeFile(mergedTopology, positions, open(out_file, 'w'))
+
     state = context.getState(getEnergy=True)
     energy = state.getPotentialEnergy()
 
@@ -69,8 +92,8 @@ if __name__ == "__main__":
     pdb_openmm = app.PDBFile(rec_file)
     docked_ligs_openmm = Molecule.from_file(docked_lig_file)
     
-    # you can get the minimized energy for each docked ligand
-    print("Energy of pose 0", get_minimized_energy(pdb_openmm, docked_ligs_openmm[0]))
+    for i, lig in enumerate(docked_ligs_openmm):
+        print("Energy of pose", i, get_minimized_energy(pdb_openmm, lig, i))
 
     docked_ligs = [ mol for mol in Chem.SDMolSupplier(docked_lig_file) ]
     crystal_lig = Chem.SDMolSupplier(crystal_lig_file)[0]

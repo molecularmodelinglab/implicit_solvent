@@ -14,3 +14,7 @@ pip install -r requirements.txt
 ```
 
 All the starter code is in `implicit_solvent.py`. Good luck!
+
+# Part 2
+
+Play around with the `simulation.ipynb` to get a feel for actually running (small) MD simulations. You'll need to intall more packages from `requirements.txt`. How long does it take to converge for larger molecules than ibuprofen? What about if you use implicit solvent?

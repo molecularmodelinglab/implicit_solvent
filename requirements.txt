@@ -1,2 +1,6 @@
 numpy
 rdkit
+openmoltools
+nglview
+mdtraj
+matplotlib
