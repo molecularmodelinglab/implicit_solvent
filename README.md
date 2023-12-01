@@ -7,7 +7,7 @@ We have a function that uses OpenMM to minimize a protein-ligand structure and r
 2. Is this pose also the pose with the lowest energy?
 3. What does the closest docked pose look like compared to the crystal pose? Install [PyMol](https://pymol.org/2/) and use it to visualize the complex.
 
-In order to get this code running, you'll need to create a new [conda](...) environment. Then you can install the required packages with:
+In order to get this code running, you'll need to create a new conda environment. Then you can install the required packages with:
 ```
 conda install -c conda-forge -c omnia openmm openff-toolkit openff-forcefields openmmforcefields -y
 pip install -r requirements.txt
